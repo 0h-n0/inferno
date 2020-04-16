@@ -230,7 +230,7 @@ class Graph(nn.Module):
             assert not self.is_sink_node(name), "Input node {} is a sink node. " \
                                                 "Make sure it's connected.".format(name)
 
-    def add_node(self, name, module, previous=None):
+    def add_node(self, name, module, previous=None, attr_dict=None):
         """
         Add a node to the graph.
 
@@ -238,6 +238,8 @@ class Graph(nn.Module):
         ----------
         name : str
             Name of the node. Nodes are identified by their names.
+        attr_dict : dict
+            Attributes of the Nodes.
 
         module : torch.nn.Module
             Torch module for this node.
@@ -252,13 +254,13 @@ class Graph(nn.Module):
         """
         assert isinstance(module, nn.Module)
         self.add_module(name, module)
-        self.graph.add_node(name)
+        self.graph.add_node(name, attr_dict=attr_dict)
         if previous is not None:
             for _previous in pyu.to_iterable(previous):
                 self.add_edge(_previous, name)
         return self
 
-    def add_input_node(self, name):
+    def add_input_node(self, name, attr_dict=None):
         """
         Add an input to the graph. The order in which input nodes are added is the
         order in which the forward method accepts its inputs.
@@ -268,16 +270,19 @@ class Graph(nn.Module):
         name : str
             Name of the input node.
 
+        attr_dict : dict
+            Attributes of the Nodes.
+
         Returns
         -------
         Graph
             self
         """
         self.add_module(name, Identity())
-        self.graph.add_node(name, is_input_node=True)
+        self.graph.add_node(name, is_input_node=True, attr_dict=attr_dict)
         return self
 
-    def add_output_node(self, name, previous=None):
+    def add_output_node(self, name, previous=None, attr_dict=None):
         """
         Add an output to the graph. The order in which output nodes are added is the
         order in which the forward method returns its outputs.
@@ -287,12 +292,15 @@ class Graph(nn.Module):
         name : str
             Name of the output node.
 
+        attr_dict : dict
+            Attributes of the Nodes.
+
         Returns
         -------
         Graph
             self
         """
-        self.graph.add_node(name, is_output_node=True)
+        self.graph.add_node(name, is_output_node=True, attr_dict=attr_dict)
         if previous is not None:
             for _previous in pyu.to_iterable(previous):
                 self.add_edge(_previous, name)
