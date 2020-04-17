@@ -230,7 +230,7 @@ class Graph(nn.Module):
             assert not self.is_sink_node(name), "Input node {} is a sink node. " \
                                                 "Make sure it's connected.".format(name)
 
-    def add_node(self, name, module, previous=None, attr_dict=None):
+    def add_node(self, name, module, previous=None, **attr):
         """
         Add a node to the graph.
 
@@ -238,7 +238,7 @@ class Graph(nn.Module):
         ----------
         name : str
             Name of the node. Nodes are identified by their names.
-        attr_dict : dict
+        attr : dict
             Attributes of the Nodes.
 
         module : torch.nn.Module
@@ -254,13 +254,13 @@ class Graph(nn.Module):
         """
         assert isinstance(module, nn.Module)
         self.add_module(name, module)
-        self.graph.add_node(name, attr_dict=attr_dict)
+        self.graph.add_node(name, **attr)
         if previous is not None:
             for _previous in pyu.to_iterable(previous):
                 self.add_edge(_previous, name)
         return self
 
-    def add_input_node(self, name, attr_dict=None):
+    def add_input_node(self, name, **attr):
         """
         Add an input to the graph. The order in which input nodes are added is the
         order in which the forward method accepts its inputs.
@@ -279,10 +279,10 @@ class Graph(nn.Module):
             self
         """
         self.add_module(name, Identity())
-        self.graph.add_node(name, is_input_node=True, attr_dict=attr_dict)
+        self.graph.add_node(name, is_input_node=True, **attr)
         return self
 
-    def add_output_node(self, name, previous=None, attr_dict=None):
+    def add_output_node(self, name, previous=None, **attr):
         """
         Add an output to the graph. The order in which output nodes are added is the
         order in which the forward method returns its outputs.
@@ -300,7 +300,7 @@ class Graph(nn.Module):
         Graph
             self
         """
-        self.graph.add_node(name, is_output_node=True, attr_dict=attr_dict)
+        self.graph.add_node(name, is_output_node=True, **attr)
         if previous is not None:
             for _previous in pyu.to_iterable(previous):
                 self.add_edge(_previous, name)
